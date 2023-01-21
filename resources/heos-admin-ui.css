@@ -1,0 +1,11 @@
+@charset "UTF-8";
+
+.form-row.checkbox input {
+
+    width: 20px;
+}
+
+.form-row.checkbox label {
+
+    width: auto;
+}
