@@ -37,7 +37,7 @@ HEOS devices are normally autodiscovered in the network. So there is no need to 
 
 The connection it established to an arbitray device in the HEOS network that will act as the gateway. The commands are not adressed to a specific HEOS devices with an IP adresses. Instead all commands are send to the *random* gateway device but all commands are equipped with a `playerID` as recipient. The HEOS network will itself route the command to the appropriate player.
 
-Use the [Quickstart Guide](documentation/quickstart.md) and follow the steps to set up your first HEOS flow in a few minutes.
+Use the [Quickstart Guide](documentation/Quickstart.md) and follow the steps to set up your first HEOS flow in a few minutes.
 
 ## HEOS Nodes
 
