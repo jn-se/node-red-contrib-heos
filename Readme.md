@@ -2,7 +2,7 @@
 
 * [Introduction](#introduction)
 * [Installation](#installation)
-* [Usage & Quickstart](#usage)
+* [Getting Started](#getting-started)
 * [HEOS Nodes](#heos-nodes)
     * [HEOS Command Node](#heos-command-node)
     * [HEOS Player State Node](#heos-player-state-node)
@@ -21,15 +21,17 @@ This node supports the legacy Denon HEOS (HS) devices and as well the newer Deno
 
 ## Installation
 
-Install via Node-RED settings palette is not yet available.
+If you have already Node-RED installed you can install the HEOS nodes via the editor. Go to the Node-RED menu and `Manage palette`. Then select the `Ìnstall` tab and search for the package `node-red-contrib-heos`.
 
-Please install via npm in Node-RED folder and point to the path where you downloaded the HEOS node.
+**Alternatively: Manual Installation via npm**
+
+In Node-RED folder install with npm and point to the path where you downloaded the HEOS node.
 
     npm install path/to/node-red-contrib-heos
 
 Then restart Node-RED to load the new HEOS node.
 
-## Usage
+## Getting Started
 
 This package offers nodes to send commands to the HEOS network and listen for responses.
 
