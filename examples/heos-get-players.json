@@ -1,0 +1,66 @@
+[
+    {
+        "id": "214daecc65059735",
+        "type": "tab",
+        "label": "HEOS - Get Players",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "c1ce8cd6172ac922",
+        "type": "heos-command",
+        "z": "214daecc65059735",
+        "name": "",
+        "device": "",
+        "deviceAutodiscover": "autodiscover",
+        "commandGroup": "player",
+        "command": "get_players",
+        "attributes": "",
+        "commandGroupFromPayload": false,
+        "commandFromPayload": false,
+        "attributesFromPayload": false,
+        "x": 390,
+        "y": 180,
+        "wires": [
+            [
+                "b005dec13510e176"
+            ]
+        ]
+    },
+    {
+        "id": "3985ce8e52afa48a",
+        "type": "inject",
+        "z": "214daecc65059735",
+        "name": "",
+        "props": [],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 160,
+        "y": 180,
+        "wires": [
+            [
+                "c1ce8cd6172ac922"
+            ]
+        ]
+    },
+    {
+        "id": "b005dec13510e176",
+        "type": "debug",
+        "z": "214daecc65059735",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 630,
+        "y": 180,
+        "wires": []
+    }
+]

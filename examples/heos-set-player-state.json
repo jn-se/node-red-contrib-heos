@@ -1,0 +1,96 @@
+[
+    {
+        "id": "373c7bb610faf028",
+        "type": "tab",
+        "label": "HEOS - Set Player State",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "1a59a66a8f316c98",
+        "type": "heos-player-state",
+        "z": "373c7bb610faf028",
+        "name": "",
+        "device": "",
+        "deviceAutodiscover": "autodiscover",
+        "playerId": "2027101967",
+        "playerState": "play",
+        "playerIdFromPayload": false,
+        "playerStateFromPayload": true,
+        "x": 450,
+        "y": 180,
+        "wires": [
+            [
+                "95b287dc1b2042cb"
+            ]
+        ]
+    },
+    {
+        "id": "47951a0e0fbf13ba",
+        "type": "inject",
+        "z": "373c7bb610faf028",
+        "name": "Play",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "{\"playerState\":\"play\"}",
+        "payloadType": "json",
+        "x": 190,
+        "y": 160,
+        "wires": [
+            [
+                "1a59a66a8f316c98"
+            ]
+        ]
+    },
+    {
+        "id": "95b287dc1b2042cb",
+        "type": "debug",
+        "z": "373c7bb610faf028",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 690,
+        "y": 180,
+        "wires": []
+    },
+    {
+        "id": "a326231a203133a1",
+        "type": "inject",
+        "z": "373c7bb610faf028",
+        "name": "Stop",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "{\"playerState\":\"stop\"}",
+        "payloadType": "json",
+        "x": 190,
+        "y": 220,
+        "wires": [
+            [
+                "1a59a66a8f316c98"
+            ]
+        ]
+    }
+]
