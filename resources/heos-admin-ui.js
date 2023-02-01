@@ -94,6 +94,7 @@ class heosAdminUI {
             }
             else {
                 // Fallback
+                $('#heos-devices-discovering').hide();
                 $('#heos-devices-message-error').show();
             }
         });
