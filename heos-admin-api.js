@@ -34,6 +34,7 @@ function heosAdminAPI(RED) {
                 ]));
             }
         })
+        .catch(reason => console.warn('Did not find any HEOS devices with autodiscovery.'))
 
     });
 
@@ -42,7 +43,7 @@ function heosAdminAPI(RED) {
         
         console.log("GET: /heos/data/players");
 
-        heos.discoverAndConnect().then(connection =>
+        heos.discoverAndConnect({ timeout: 5000 }).then(connection =>
     
             connection
                 .on({ commandGroup: "player", command: "get_players"}, (response) => {
@@ -70,6 +71,7 @@ function heosAdminAPI(RED) {
                 })
                 .write("player", "get_players")
         )
+        .catch(reason => console.warn('Did not find any HEOS devices with autodiscovery. Could not connect to HEOS network to retrieve list of players.'))
     });
 }
 

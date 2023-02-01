@@ -76,11 +76,12 @@ module.exports = function(RED) {
                             if (hadError) {
                                 node.error('There was a transmission error and the connection closed.')
                             } else {
-                                node.warn('Connection closed')
+                                node.warn('Connection closed.')
                             }
                         })
                         .write(commandGroup, command, attributes)
                 )
+                .catch(reason => node.warn('Did not find any HEOS devices with autodiscovery. Could not connect to HEOS network.'))
             }
             else {
 
@@ -89,22 +90,20 @@ module.exports = function(RED) {
 
                     let ipAddress = node.device.ip;
 
-                    heos.connect(ipAddress).then(connection => {
-                        
-                        node.device.heosConnection = connection
+                    heos.connect(ipAddress).then(connection => 
 
                         connection
                             .on({ commandGroup: commandGroup, command: command}, (message) => {
                             node.send(message);
                         })
                         .write(commandGroup, command, attributes)
-                    })
-                    
+                    )
+                    .catch(reason => node.warn('Could not connect to HEOS devices with IP '+ipAddress+'.'))
                 }
                 else {
 
                     // TODO: Handle error - autodicover disabled but no IP specified
-                    console.warn("HEOS node: Autodicover disabled but no IP specified");
+                    node.warn("HEOS node: Autodicover disabled but no IP specified.");
                 }
             }
 
@@ -156,6 +155,7 @@ module.exports = function(RED) {
                         })
                         .write("player", "set_play_state", attributes)
                 )
+                .catch(reason => node.warn('Did not find any HEOS devices with autodiscovery. Could not connect to HEOS network.'))
             }
             else {
 
@@ -172,11 +172,12 @@ module.exports = function(RED) {
                             })
                             .write("player", "set_play_state", attributes)
                     )
+                    .catch(reason => node.warn('Could not connect to HEOS devices with IP '+ipAddress+'.'))
                 }
                 else {
 
                     // TODO: Handle error - autodicover disabled but no IP specified
-                    console.warn("HEOS node: Autodicover disabled but no IP specified");
+                    node.warn("HEOS node: Autodicover disabled but no IP specified.");
                 }
             }
 
