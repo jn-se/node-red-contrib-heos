@@ -40,7 +40,9 @@ module.exports = function(RED) {
         node.heosCommand = config.command;
         node.heosAttributes = config.attributes;
 
-        node.on('input', function(msg) {
+        var heosConnection;
+
+        node.on('input', function(msg, send, done) {
 
             var commandGroup = node.heosCommandGroup;
             var command = node.heosCommand;
@@ -66,11 +68,23 @@ module.exports = function(RED) {
             if(node.deviceAutodiscover == "autodiscover") {
 
                 // Autodiscovering is used - connect via discoverAndConnect
-                heos.discoverAndConnect().then(connection =>
-    
+                heos.discoverAndConnect().then(connection => {
+                    
+                    heosConnection = connection
+
                     connection
                         .on({ commandGroup: commandGroup, command: command}, (message) => {
-                            node.send(message);
+
+                            // For maximum backwards compatibility, check that send exists.
+                            // If this node is installed in Node-RED 0.x, it will need to
+                            // fallback to using `node.send`
+                            send = send || function() { node.send.apply(node,arguments) }
+
+                            send(message);
+
+                            if (done) {
+                                done();
+                            }
                         })
                         .onClose(hadError => {
                             if (hadError) {
@@ -80,7 +94,7 @@ module.exports = function(RED) {
                             }
                         })
                         .write(commandGroup, command, attributes)
-                )
+                })
                 .catch(reason => node.warn('Did not find any HEOS devices with autodiscovery. Could not connect to HEOS network.'))
             }
             else {
@@ -90,14 +104,26 @@ module.exports = function(RED) {
 
                     let ipAddress = node.device.ip;
 
-                    heos.connect(ipAddress).then(connection => 
+                    heos.connect(ipAddress).then(connection => {
+                        
+                        heosConnection = connection
 
                         connection
                             .on({ commandGroup: commandGroup, command: command}, (message) => {
-                            node.send(message);
+
+                            // For maximum backwards compatibility, check that send exists.
+                            // If this node is installed in Node-RED 0.x, it will need to
+                            // fallback to using `node.send`
+                            send = send || function() { node.send.apply(node,arguments) }
+
+                            send(message);
+
+                            if (done) {
+                                done();
+                            }
                         })
                         .write(commandGroup, command, attributes)
-                    )
+                    })
                     .catch(reason => node.warn('Could not connect to HEOS devices with IP '+ipAddress+'.'))
                 }
                 else {
@@ -108,9 +134,20 @@ module.exports = function(RED) {
             }
 
         });
+
+        this.on('close', function(done) {
+
+            heosConnection.close().then(resolve => {
+                console.log(resolve)
+                done();
+            })
+            .catch(err => {
+                console.error(err)
+            })
+        });
     }
 
-    RED.nodes.registerType("heos-command",HeosCommandNode);
+    RED.nodes.registerType("heos-command", HeosCommandNode);
 
     /**
      * The HeosPlayerStateNode can submit player state commands to the HEOS network.
@@ -126,7 +163,9 @@ module.exports = function(RED) {
         node.heosPlayerId = config.playerId;
         node.heosPlayerState = config.playerState;
 
-        node.on('input', function(msg) {
+        var heosConnection;
+
+        node.on('input', function(msg, send, done) {
 
             var playerId = node.heosPlayerId;
             var playerState = node.heosPlayerState;
@@ -147,14 +186,26 @@ module.exports = function(RED) {
             if(node.deviceAutodiscover == "autodiscover") {
 
                 // Autodiscovering is used - connect via discoverAndConnect
-                heos.discoverAndConnect().then(connection =>
-    
+                heos.discoverAndConnect().then(connection => {
+                    
+                    heosConnection = connection
+
                     connection
                         .on({ commandGroup: "player", command: "set_play_state"}, (message) => {
-                            node.send(message);
+
+                            // For maximum backwards compatibility, check that send exists.
+                            // If this node is installed in Node-RED 0.x, it will need to
+                            // fallback to using `node.send`
+                            send = send || function() { node.send.apply(node,arguments) }
+
+                            send(message);
+
+                            if (done) {
+                                done();
+                            }
                         })
                         .write("player", "set_play_state", attributes)
-                )
+                })
                 .catch(reason => node.warn('Did not find any HEOS devices with autodiscovery. Could not connect to HEOS network.'))
             }
             else {
@@ -164,14 +215,26 @@ module.exports = function(RED) {
 
                     let ipAddress = node.device.ip;
 
-                    heos.connect(ipAddress).then(connection =>
-    
+                    heos.connect(ipAddress).then(connection => {
+                        
+                        heosConnection = connection
+
                         connection
                             .on({ commandGroup: "player", command: "set_play_state"}, (message) => {
-                                node.send(message);
+
+                                // For maximum backwards compatibility, check that send exists.
+                                // If this node is installed in Node-RED 0.x, it will need to
+                                // fallback to using `node.send`
+                                send = send || function() { node.send.apply(node,arguments) }
+
+                                send(message);
+
+                                if (done) {
+                                    done();
+                                }
                             })
                             .write("player", "set_play_state", attributes)
-                    )
+                    })
                     .catch(reason => node.warn('Could not connect to HEOS devices with IP '+ipAddress+'.'))
                 }
                 else {
@@ -182,9 +245,20 @@ module.exports = function(RED) {
             }
 
         });
+
+        this.on('close', function(done) {
+
+            heosConnection.close().then(resolve => {
+                console.log(resolve)
+                done();
+            })
+            .catch(err => {
+                console.error(err)
+            })
+        });
     }
 
-    RED.nodes.registerType("heos-player-state",HeosPlayerStateNode);
+    RED.nodes.registerType("heos-player-state", HeosPlayerStateNode);
 
     // Data lookup for UI
     heosAdminAPI.heosAdminAPI(RED)
