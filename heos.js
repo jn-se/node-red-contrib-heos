@@ -150,6 +150,127 @@ module.exports = function(RED) {
     RED.nodes.registerType("heos-command", HeosCommandNode);
 
     /**
+     * The HeosListenerNode is used to listen for change events in the HEOS network.
+     */
+    function HeosListenerNode(config) {
+
+        RED.nodes.createNode(this, config);
+        var node = this;
+
+        node.status({fill:"red",shape:"ring",text:"disconnected"});
+
+        node.device = RED.nodes.getNode(config.device);
+        node.deviceAutodiscover = config.deviceAutodiscover;
+
+        node.heosCommandGroup = config.commandGroup;
+        node.heosCommand = config.command;
+
+        var heosConnection;
+
+        if(node.deviceAutodiscover == "autodiscover") {
+
+            // Autodiscovering is used - connect via discoverAndConnect
+            heos.discoverAndConnect().then(connection => {
+
+                heosConnection = connection
+
+                node.status({fill:"green",shape:"ring",text:"connected"})
+
+                connection
+                    .write("system", "register_for_change_events", {enable: "on"})
+                    .on({ commandGroup: node.heosCommandGroup, command: node.heosCommand}, (message) => {
+
+                        // For maximum backwards compatibility, check that send exists.
+                        // If this node is installed in Node-RED 0.x, it will need to
+                        // fallback to using `node.send`
+                        send = send || function() { node.send.apply(node,arguments) }
+
+                        send(message);
+
+                        if (done) {
+                            done();
+                        }
+                    })
+                    .onClose(hadError => {
+                        if (hadError) {
+                            node.error('There was a transmission error and the connection closed.')
+                        } else {
+                            node.warn('Connection closed.')
+                        }
+                })
+            })
+            .catch(reason => node.warn('Did not find any HEOS devices with autodiscovery. Could not connect to HEOS network.'))
+        }
+        else {
+
+            // Autodiscovering is disabled - connect to specific device
+            if(node.device) {
+
+                let ipAddress = node.device.ip;
+
+                heos.connect(ipAddress).then(connection => {
+
+                    heosConnection = connection
+
+                    node.status({fill:"green",shape:"ring",text:"connected"})
+
+                    connection
+                        .write("system", "register_for_change_events", {enable: "on"})
+                        .on({ commandGroup: node.heosCommandGroup, command: node.heosCommand}, (message) => {
+
+                            // For maximum backwards compatibility, check that send exists.
+                            // If this node is installed in Node-RED 0.x, it will need to
+                            // fallback to using `node.send`
+                            send = send || function() { node.send.apply(node,arguments) }
+
+                            send(message);
+
+                            if (done) {
+                                done();
+                            }
+                        })
+                        .onError(error => {
+                            node.error(error)
+                        })
+                })
+                .catch(reason => node.warn('Could not connect to HEOS devices with IP '+ipAddress+'.'))
+            }
+            else {
+
+                // TODO: Handle error - autodicover disabled but no IP specified
+                node.warn("HEOS node: Autodicover disabled but no IP specified.");
+            }
+        }
+
+        node.on('input', function(msg, send, done) {
+
+            // For maximum backwards compatibility, check that send exists.
+            // If this node is installed in Node-RED 0.x, it will need to
+            // fallback to using `node.send`
+            send = send || function() { node.send.apply(node,arguments) }
+
+            send(msg);
+
+            if (done) {
+                done();
+            }
+        });
+
+        this.on('close', function(done) {
+
+            heosConnection.close().then(resolve => {
+                console.log(resolve)
+                done();
+            })
+            .catch(err => {
+                console.error(err)
+            })
+        });
+    }
+
+    RED.nodes.registerType("heos-listener", HeosListenerNode);
+
+    /**
      * The HeosPlayerStateNode can submit player state commands to the HEOS network.
      */
     function HeosPlayerStateNode(config) {
