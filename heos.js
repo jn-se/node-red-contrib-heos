@@ -33,6 +33,8 @@ module.exports = function(RED) {
         RED.nodes.createNode(this, config);
         var node = this;
 
+        node.status({fill:"red",shape:"ring",text:"disconnected"});
+
         node.device = RED.nodes.getNode(config.device);
         node.deviceAutodiscover = config.deviceAutodiscover;
 
@@ -72,6 +74,8 @@ module.exports = function(RED) {
                     
                     heosConnection = connection
 
+                    node.status({fill:"green",shape:"dot",text:"connected"})
+
                     connection
                         .on({ commandGroup: commandGroup, command: command}, (message) => {
 
@@ -107,6 +111,8 @@ module.exports = function(RED) {
                     heos.connect(ipAddress).then(connection => {
                         
                         heosConnection = connection
+
+                        node.status({fill:"green",shape:"dot",text:"connected"})
 
                         connection
                             .on({ commandGroup: commandGroup, command: command}, (message) => {
@@ -174,7 +180,7 @@ module.exports = function(RED) {
 
                 heosConnection = connection
 
-                node.status({fill:"green",shape:"ring",text:"connected"})
+                node.status({fill:"green",shape:"dot",text:"connected"})
 
                 connection
                     .write("system", "register_for_change_events", {enable: "on"})
@@ -212,7 +218,7 @@ module.exports = function(RED) {
 
                     heosConnection = connection
 
-                    node.status({fill:"green",shape:"ring",text:"connected"})
+                    node.status({fill:"green",shape:"dot",text:"connected"})
 
                     connection
                         .write("system", "register_for_change_events", {enable: "on"})
@@ -278,6 +284,8 @@ module.exports = function(RED) {
         RED.nodes.createNode(this, config);
         var node = this;
 
+        node.status({fill:"red",shape:"ring",text:"disconnected"});
+
         node.device = RED.nodes.getNode(config.device);
         node.deviceAutodiscover = config.deviceAutodiscover;
 
@@ -311,6 +319,8 @@ module.exports = function(RED) {
                     
                     heosConnection = connection
 
+                    node.status({fill:"green",shape:"dot",text:"connected"})
+
                     connection
                         .on({ commandGroup: "player", command: "set_play_state"}, (message) => {
 
@@ -339,6 +349,8 @@ module.exports = function(RED) {
                     heos.connect(ipAddress).then(connection => {
                         
                         heosConnection = connection
+
+                        node.status({fill:"green",shape:"dot",text:"connected"})
 
                         connection
                             .on({ commandGroup: "player", command: "set_play_state"}, (message) => {
