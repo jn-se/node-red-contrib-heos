@@ -186,16 +186,8 @@ module.exports = function(RED) {
                     .write("system", "register_for_change_events", {enable: "on"})
                     .on({ commandGroup: node.heosCommandGroup, command: node.heosCommand}, (message) => {
 
-                        // For maximum backwards compatibility, check that send exists.
-                        // If this node is installed in Node-RED 0.x, it will need to
-                        // fallback to using `node.send`
-                        send = send || function() { node.send.apply(node,arguments) }
+                        node.send(message);
 
-                        send(message);
-
-                        if (done) {
-                            done();
-                        }
                     })
                     .onClose(hadError => {
                         if (hadError) {
@@ -224,16 +216,7 @@ module.exports = function(RED) {
                         .write("system", "register_for_change_events", {enable: "on"})
                         .on({ commandGroup: node.heosCommandGroup, command: node.heosCommand}, (message) => {
 
-                            // For maximum backwards compatibility, check that send exists.
-                            // If this node is installed in Node-RED 0.x, it will need to
-                            // fallback to using `node.send`
-                            send = send || function() { node.send.apply(node,arguments) }
-
-                            send(message);
-
-                            if (done) {
-                                done();
-                            }
+                            node.send(message);
                         })
                         .onError(error => {
                             node.error(error)
@@ -261,7 +244,7 @@ module.exports = function(RED) {
                 done();
             }
         });
-
+        
         this.on('close', function(done) {
 
             heosConnection.close().then(resolve => {
