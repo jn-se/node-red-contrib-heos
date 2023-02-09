@@ -8,7 +8,80 @@ const heos = require('heos-api')
 
 const heosAdminAPI = require('./heos-admin-api.js');
 
+const sleep = require('util').promisify(setTimeout)
+
 module.exports = function(RED) {
+
+    function initNode(node) {
+
+        node.status({fill:"blue",shape:"ring",text:"idle"});
+    }
+
+    function onNodeConnecting(node) {
+
+        node.status({fill:"yellow",shape:"ring",text:"connecting"});
+    }
+
+    function startConnectionAndLog(node, ipAddress = null) {
+
+        if (ipAddress) {
+            node.log("Connected to HEOS device ("+ipAddress+")")
+        }
+        else {
+            node.log("Connected to HEOS device via autodiscover.")
+        }
+        
+        node.status({fill:"green",shape:"dot",text:"connected"})
+    }
+
+    function closeConnectionAndLog(node, heosConnection) {
+
+        heosConnection.close().then(resolve => {
+
+            node.log("Disconnected from HEOS device ("+resolve+")")
+
+        })
+        .catch(err => {
+            node.error("HEOS connection error: "+error)
+        })
+    }
+
+    function onCloseConnection(node, error) {
+
+        (async () => {
+            await sleep(3000)
+            node.status({fill:"blue",shape:"ring",text:"idle"});
+        })()
+
+        if (error) {
+            node.error('HEOS connection: There was a transmission error and the connection closed.')
+        } else {
+            node.log('HEOS connection closed.')
+        }
+    }
+
+    function onErrorConnection(node, error) {
+
+        node.error("HEOS connection error: "+error)
+    }
+
+    function onDiscoveryAndConnectCatch(node, ipAddress) {
+
+        if(ipAddress) {
+            node.status({fill:"red",shape:"ring",text:"connection error"});
+            node.warn('Could not connect to HEOS devices with IP '+ipAddress+'.')
+        }
+        else {
+            node.status({fill:"red",shape:"ring",text:"autodiscovery failed"});
+            node.warn('Did not find any HEOS devices with autodiscovery. Could not connect to HEOS network.')
+        }
+    }
+
+    function noIPDefined(node) {
+
+        node.status({fill:"red",shape:"ring",text:"could not connect"});
+        node.warn("HEOS node: Autodiscover disabled but no IP specified.");
+    }
 
     /**
      * The HeosDeviceNode configures a specific HEOS device as gateway.
@@ -33,7 +106,7 @@ module.exports = function(RED) {
         RED.nodes.createNode(this, config);
         var node = this;
 
-        node.status({fill:"red",shape:"ring",text:"disconnected"});
+        initNode(node)
 
         node.device = RED.nodes.getNode(config.device);
         node.deviceAutodiscover = config.deviceAutodiscover;
@@ -45,6 +118,8 @@ module.exports = function(RED) {
         var heosConnection;
 
         node.on('input', function(msg, send, done) {
+
+            onNodeConnecting(node)
 
             var commandGroup = node.heosCommandGroup;
             var command = node.heosCommand;
@@ -71,10 +146,10 @@ module.exports = function(RED) {
 
                 // Autodiscovering is used - connect via discoverAndConnect
                 heos.discoverAndConnect().then(connection => {
+
+                    startConnectionAndLog(node)
                     
                     heosConnection = connection
-
-                    node.status({fill:"green",shape:"dot",text:"connected"})
 
                     connection
                         .on({ commandGroup: commandGroup, command: command}, (message) => {
@@ -86,20 +161,27 @@ module.exports = function(RED) {
 
                             send(message);
 
+                            closeConnectionAndLog(node, heosConnection)
+
                             if (done) {
                                 done();
                             }
                         })
-                        .onClose(hadError => {
-                            if (hadError) {
-                                node.error('There was a transmission error and the connection closed.')
-                            } else {
-                                node.warn('Connection closed.')
-                            }
+                        .onClose(error => {
+
+                            onCloseConnection(node, error)
+
+                        })
+                        .onError(error => {
+                            
+                            onErrorConnection(node, error)
                         })
                         .write(commandGroup, command, attributes)
                 })
-                .catch(reason => node.warn('Did not find any HEOS devices with autodiscovery. Could not connect to HEOS network.'))
+                .catch(reason => {
+
+                    onDiscoveryAndConnectCatch(node) 
+                })
             }
             else {
 
@@ -110,32 +192,44 @@ module.exports = function(RED) {
 
                     heos.connect(ipAddress).then(connection => {
                         
-                        heosConnection = connection
+                        startConnectionAndLog(node, ipAddress)
 
-                        node.status({fill:"green",shape:"dot",text:"connected"})
+                        heosConnection = connection
 
                         connection
                             .on({ commandGroup: commandGroup, command: command}, (message) => {
 
-                            // For maximum backwards compatibility, check that send exists.
-                            // If this node is installed in Node-RED 0.x, it will need to
-                            // fallback to using `node.send`
-                            send = send || function() { node.send.apply(node,arguments) }
+                                // For maximum backwards compatibility, check that send exists.
+                                // If this node is installed in Node-RED 0.x, it will need to
+                                // fallback to using `node.send`
+                                send = send || function() { node.send.apply(node,arguments) }
 
-                            send(message);
+                                send(message);
 
-                            if (done) {
-                                done();
-                            }
-                        })
-                        .write(commandGroup, command, attributes)
+                                closeConnectionAndLog(node, heosConnection)
+
+                                if (done) {
+                                    done();
+                                }
+                            })
+                            .onClose(error => {
+                                
+                                onCloseConnection(node, error)
+                            })
+                            .onError(error => {
+                                
+                                onErrorConnection(node, error)
+                            })
+                            .write(commandGroup, command, attributes)
                     })
-                    .catch(reason => node.warn('Could not connect to HEOS devices with IP '+ipAddress+'.'))
+                    .catch(reason => {
+
+                        onDiscoveryAndConnectCatch(node, ipAddress) 
+                    })
                 }
                 else {
 
-                    // TODO: Handle error - autodicover disabled but no IP specified
-                    node.warn("HEOS node: Autodicover disabled but no IP specified.");
+                    noIPDefined(node)
                 }
             }
 
@@ -144,11 +238,13 @@ module.exports = function(RED) {
         this.on('close', function(done) {
 
             heosConnection.close().then(resolve => {
-                console.log(resolve)
+
+                node.log("Disconnected from HEOS device ("+resolve+")")
                 done();
+
             })
             .catch(err => {
-                console.error(err)
+                node.error("HEOS connection error: "+error)
             })
         });
     }
@@ -163,7 +259,9 @@ module.exports = function(RED) {
         RED.nodes.createNode(this, config);
         var node = this;
 
-        node.status({fill:"red",shape:"ring",text:"disconnected"});
+        initNode(node)
+
+        onNodeConnecting(node)
 
         node.device = RED.nodes.getNode(config.device);
         node.deviceAutodiscover = config.deviceAutodiscover;
@@ -178,26 +276,30 @@ module.exports = function(RED) {
             // Autodiscovering is used - connect via discoverAndConnect
             heos.discoverAndConnect().then(connection => {
 
+                startConnectionAndLog(node)
+
                 heosConnection = connection
 
-                node.status({fill:"green",shape:"dot",text:"connected"})
-
                 connection
-                    .write("system", "register_for_change_events", {enable: "on"})
                     .on({ commandGroup: node.heosCommandGroup, command: node.heosCommand}, (message) => {
 
                         node.send(message);
 
                     })
-                    .onClose(hadError => {
-                        if (hadError) {
-                            node.error('There was a transmission error and the connection closed.')
-                        } else {
-                            node.warn('Connection closed.')
-                        }
-                })
+                    .onClose(error => {
+
+                        onCloseConnection(node, error)
+                    })
+                    .onError(error => {
+                        
+                        onErrorConnection(node, error)
+                    })
+                    .write("system", "register_for_change_events", {enable: "on"})
             })
-            .catch(reason => node.warn('Did not find any HEOS devices with autodiscovery. Could not connect to HEOS network.'))
+            .catch(reason => {
+
+                onDiscoveryAndConnectCatch(node) 
+            })
         }
         else {
 
@@ -208,26 +310,33 @@ module.exports = function(RED) {
 
                 heos.connect(ipAddress).then(connection => {
 
+                    startConnectionAndLog(node, ipAddress)
+
                     heosConnection = connection
 
-                    node.status({fill:"green",shape:"dot",text:"connected"})
-
                     connection
-                        .write("system", "register_for_change_events", {enable: "on"})
                         .on({ commandGroup: node.heosCommandGroup, command: node.heosCommand}, (message) => {
 
                             node.send(message);
                         })
-                        .onError(error => {
-                            node.error(error)
+                        .onClose(error => {
+
+                            onCloseConnection(node, error)
                         })
+                        .onError(error => {
+                            
+                            onErrorConnection(node, error)
+                        })
+                        .write("system", "register_for_change_events", {enable: "on"})
                 })
-                .catch(reason => node.warn('Could not connect to HEOS devices with IP '+ipAddress+'.'))
+                .catch(reason => {
+
+                    onDiscoveryAndConnectCatch(node, ipAddress) 
+                })
             }
             else {
 
-                // TODO: Handle error - autodicover disabled but no IP specified
-                node.warn("HEOS node: Autodicover disabled but no IP specified.");
+                noIPDefined(node)
             }
         }
 
@@ -248,11 +357,13 @@ module.exports = function(RED) {
         this.on('close', function(done) {
 
             heosConnection.close().then(resolve => {
-                console.log(resolve)
+
+                node.log("Disconnected from HEOS device ("+resolve+")")
                 done();
+
             })
             .catch(err => {
-                console.error(err)
+                node.error("HEOS connection error: "+error)
             })
         });
     }
@@ -267,7 +378,7 @@ module.exports = function(RED) {
         RED.nodes.createNode(this, config);
         var node = this;
 
-        node.status({fill:"red",shape:"ring",text:"disconnected"});
+        initNode(node)
 
         node.device = RED.nodes.getNode(config.device);
         node.deviceAutodiscover = config.deviceAutodiscover;
@@ -278,6 +389,8 @@ module.exports = function(RED) {
         var heosConnection;
 
         node.on('input', function(msg, send, done) {
+
+            onNodeConnecting(node)
 
             var playerId = node.heosPlayerId;
             var playerState = node.heosPlayerState;
@@ -300,9 +413,9 @@ module.exports = function(RED) {
                 // Autodiscovering is used - connect via discoverAndConnect
                 heos.discoverAndConnect().then(connection => {
                     
-                    heosConnection = connection
+                    startConnectionAndLog(node)
 
-                    node.status({fill:"green",shape:"dot",text:"connected"})
+                    heosConnection = connection
 
                     connection
                         .on({ commandGroup: "player", command: "set_play_state"}, (message) => {
@@ -314,13 +427,26 @@ module.exports = function(RED) {
 
                             send(message);
 
+                            closeConnectionAndLog(node, heosConnection)
+
                             if (done) {
                                 done();
                             }
                         })
+                        .onClose(error => {
+                            
+                            onCloseConnection(node, error)
+                        })
+                        .onError(error => {
+                            
+                            onErrorConnection(node, error)
+                        })
                         .write("player", "set_play_state", attributes)
                 })
-                .catch(reason => node.warn('Did not find any HEOS devices with autodiscovery. Could not connect to HEOS network.'))
+                .catch(reason => {
+
+                    onDiscoveryAndConnectCatch(node) 
+                })
             }
             else {
 
@@ -331,9 +457,9 @@ module.exports = function(RED) {
 
                     heos.connect(ipAddress).then(connection => {
                         
-                        heosConnection = connection
+                        startConnectionAndLog(node, ipAddress)
 
-                        node.status({fill:"green",shape:"dot",text:"connected"})
+                        heosConnection = connection
 
                         connection
                             .on({ commandGroup: "player", command: "set_play_state"}, (message) => {
@@ -345,18 +471,30 @@ module.exports = function(RED) {
 
                                 send(message);
 
+                                closeConnectionAndLog(node, heosConnection)
+
                                 if (done) {
                                     done();
                                 }
                             })
+                            .onClose(error => {
+                                
+                                onCloseConnection(node, error)
+                            })
+                            .onError(error => {
+                                
+                                onErrorConnection(node, error)
+                            })
                             .write("player", "set_play_state", attributes)
                     })
-                    .catch(reason => node.warn('Could not connect to HEOS devices with IP '+ipAddress+'.'))
+                    .catch(reason => {
+
+                        onDiscoveryAndConnectCatch(node, ipAddress) 
+                    })
                 }
                 else {
 
-                    // TODO: Handle error - autodicover disabled but no IP specified
-                    node.warn("HEOS node: Autodicover disabled but no IP specified.");
+                    noIPDefined(node)
                 }
             }
 
@@ -365,11 +503,13 @@ module.exports = function(RED) {
         this.on('close', function(done) {
 
             heosConnection.close().then(resolve => {
-                console.log(resolve)
+
+                node.log("Disconnected from HEOS device ("+resolve+")")
                 done();
+
             })
             .catch(err => {
-                console.error(err)
+                node.error("HEOS connection error: "+error)
             })
         });
     }
