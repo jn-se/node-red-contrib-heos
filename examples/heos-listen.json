@@ -1,0 +1,78 @@
+[
+    {
+        "id": "9024a1e0e73ebe8e",
+        "type": "tab",
+        "label": "HEOS - Listen for Events",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "4d7b61f9f6050f94",
+        "type": "debug",
+        "z": "9024a1e0e73ebe8e",
+        "name": "Debug Volume",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 620,
+        "y": 180,
+        "wires": []
+    },
+    {
+        "id": "9814f898b0dd2f90",
+        "type": "heos-listener",
+        "z": "9024a1e0e73ebe8e",
+        "name": "",
+        "device": "",
+        "deviceAutodiscover": "autodiscover",
+        "commandGroup": "event",
+        "command": "player_volume_changed",
+        "x": 380,
+        "y": 180,
+        "wires": [
+            [
+                "4d7b61f9f6050f94"
+            ]
+        ]
+    },
+    {
+        "id": "28cc1302cf41db44",
+        "type": "heos-listener",
+        "z": "9024a1e0e73ebe8e",
+        "name": "",
+        "device": "",
+        "deviceAutodiscover": "autodiscover",
+        "commandGroup": "event",
+        "command": "player_state_changed",
+        "x": 380,
+        "y": 260,
+        "wires": [
+            [
+                "7438b410e05a0561"
+            ]
+        ]
+    },
+    {
+        "id": "7438b410e05a0561",
+        "type": "debug",
+        "z": "9024a1e0e73ebe8e",
+        "name": "Debug State",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 610,
+        "y": 260,
+        "wires": []
+    }
+]

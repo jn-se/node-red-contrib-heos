@@ -20,8 +20,8 @@
         "commandGroupFromPayload": false,
         "commandFromPayload": false,
         "attributesFromPayload": false,
-        "x": 390,
-        "y": 180,
+        "x": 430,
+        "y": 200,
         "wires": [
             [
                 "b005dec13510e176"
@@ -39,8 +39,8 @@
         "once": false,
         "onceDelay": 0.1,
         "topic": "",
-        "x": 160,
-        "y": 180,
+        "x": 200,
+        "y": 200,
         "wires": [
             [
                 "c1ce8cd6172ac922"
@@ -56,11 +56,22 @@
         "tosidebar": true,
         "console": false,
         "tostatus": false,
-        "complete": "false",
+        "complete": "payload",
+        "targetType": "msg",
         "statusVal": "",
         "statusType": "auto",
-        "x": 630,
-        "y": 180,
+        "x": 670,
+        "y": 200,
+        "wires": []
+    },
+    {
+        "id": "21b92cb14b3e7083",
+        "type": "comment",
+        "z": "214daecc65059735",
+        "name": "Readme",
+        "info": "This example shows how a custom command is being sent.",
+        "x": 180,
+        "y": 120,
         "wires": []
     }
 ]

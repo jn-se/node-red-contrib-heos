@@ -33,10 +33,12 @@ The connection it established to an arbitrary HEOS device in your network that w
 
 Use the [Quickstart Guide](documentation/Quickstart.md) and follow the steps to set up your first HEOS flow in a few minutes.
 
-There are also some examples flow available in the `examples` folder:
+There are also some example flows available in the `examples` folder:
 
-* Get Players
-* Set Player State
+* Get Players: [heos-get-players.json](examples/heos-get-players.json)
+* Set Player State: [heos-set-player-state.json](examples/heos-set-player-state.json)
+* Set Player Volume: [heos-set-player-volume.json](examples/heos-set-player-volume.json)
+* Listen for Change Events: [heos-listen.json](examples/heos-listen.json)
 
 # HEOS Nodes
 
