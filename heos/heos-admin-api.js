@@ -10,7 +10,7 @@ function heosAdminAPI(RED) {
     // API endpoint for retrieving device information. Devices are physical HEOS devices that provide HEOS players.
     RED.httpAdmin.get('/heos/data/devices', function (req, res, next) {
         
-        console.log("GET: /heos/data/devices");
+        console.log("GET: /heos/data/devices")
 
         heos.discoverDevices({ timeout: 5000 }, (address) => {
 
@@ -21,27 +21,22 @@ function heosAdminAPI(RED) {
             try {
 
                 // Return array of HEOS devices in the network
-                res.end(JSON.stringify(addresses));
+                res.json({devices: addresses})
     
             } catch (error) {
     
-                console.warn(error);
+                console.error('Error while retrieving HEOS players: '+error)
                 
-                res.end(JSON.stringify([
-                    {
-                        message: "Error while scanning for HEOS devices."
-                    }
-                ]));
+                res.json({message: "Error while scanning for HEOS devices."})
             }
         })
-        .catch(reason => console.warn('Did not find any HEOS devices with autodiscovery.'))
 
     });
 
     // API endpoint for retrieving player information. Player are the music players that are provided by the devices.
     RED.httpAdmin.get('/heos/data/players', function (req, res, next) {
         
-        console.log("GET: /heos/data/players");
+        console.log("GET: /heos/data/players")
 
         heos.discoverAndConnect({ timeout: 5000 }).then(connection =>
     
@@ -50,28 +45,31 @@ function heosAdminAPI(RED) {
                     
                     if(response.payload) {
 
-                        let players = response.payload;
+                        let players = response.payload
 
                         try {
 
                             // Return array of HEOS players in the network
-                            res.end(JSON.stringify(players));
+                            res.json({players: players})
                 
                         } catch (error) {
-                
-                            console.warn(error);
+
+                            console.error('Error while retrieving HEOS players: '+error);
                             
-                            res.end(JSON.stringify([
-                                {
-                                    message: "Error while retrieving HEOS players."
-                                }
-                            ]));
+                            res.json({message: "Error while retrieving HEOS players."});
                         }
                     }
                 })
                 .write("player", "get_players")
         )
-        .catch(reason => console.warn('Did not find any HEOS devices with autodiscovery. Could not connect to HEOS network to retrieve list of players.'))
+        .catch(reason => {
+
+            const message = 'Did not find any HEOS devices with autodiscovery. Could not connect to HEOS network to retrieve list of players.'
+            
+            console.warn(message)
+            
+            res.json({message: message});
+        })
     });
 }
 

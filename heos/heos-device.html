@@ -1,0 +1,69 @@
+<script src="resources/@jn-se/node-red-contrib-heos/heos-admin-ui.js"></script>
+<link rel="stylesheet" href="resources/@jn-se/node-red-contrib-heos/heos-admin-ui.css">
+
+<script type="text/javascript">
+
+    RED.nodes.registerType('heos-device',{
+        category: 'config',
+        defaults: {
+            ip: {value:"",required:true},
+            name: {value:"",required:true},
+        },
+        label: function() {
+            return this.name+" ("+this.ip+")";
+        },
+        oneditprepare: function() {
+
+            let ui = new heosAdminUI();
+            ui.updateDevicesList();
+
+            $("#heos-devices-scan").on("click", function(evt) {
+                
+                let ui = new heosAdminUI();
+                ui.updateDevicesList();
+            });
+        }
+    });
+
+</script>
+
+<script type="text/html" data-template-name="heos-device">
+    <div class="form-row">
+        <label for="node-config-input-ip"><i class="fa fa-server"></i> IP</label>
+        <input type="text" id="node-config-input-ip">
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-config-input-name">
+    </div>
+    <hr />
+    <p><strong>Available HEOS Devices</strong></p>
+    <div id="heos-devices-discovering">
+        <i class="fa fa-spinner fa-spin"></i> <em>Scanning network...</em>
+    </div>
+    <div id="heos-devices-message-no-devices">
+        <i class="fa fa-exclamation-triangle"></i> <em>No devices found in your network.</em>
+    </div>
+    <div id="heos-devices-message-error">
+        <i class="fa fa-exclamation-triangle"></i> <em>Error while scanning for HEOS devices.</em>
+    </div>
+    <div id="heos-devices">
+        <p>The following IP addresses are HEOS devices found in your network.</p>
+        <ul>
+        </ul>
+    </div>
+    <button id="heos-devices-scan" type="button" class="red-ui-button" style="margin-top:10px;">Re-scan for HEOS Devices</button>
+</script>
+
+<script type="text/html" data-help-name="heos-device">
+    <p>The HEOS device configuration allows to specify a specific HEOS device in the network that should be used as gateway.</p>
+    <p>Using this configuration is optional because HEOS devices can be auto-discoverd in the network by the HEOS nodes.</p>
+    <h3>Properties</h3>
+    <h4>IP</h4>
+    <p>The IP address of the HEOS device.</p>
+    <h4>Name</h4>
+    <p>A name for the device that is used in Node Red forms.</p>
+    <h3>Devices List</h3>
+    <p>HEOS devices are broadcasting via UPnP in the local network. The IP addresses shown are auto discovered devices in your network.</p>
+    <p>If the list is empty there might be UPnP blocked for your Node Red instance. Try to enter manually an IP address of an HEOS device in your network.</p>
+</script>

@@ -14,7 +14,7 @@
         "name": "",
         "device": "",
         "deviceAutodiscover": "autodiscover",
-        "playerId": "2027101967",
+        "playerId": "",
         "playerState": "play",
         "playerIdFromPayload": false,
         "playerStateFromPayload": true,
@@ -92,5 +92,15 @@
                 "1a59a66a8f316c98"
             ]
         ]
+    },
+    {
+        "id": "47188dd82c21893a",
+        "type": "comment",
+        "z": "373c7bb610faf028",
+        "name": "Readme",
+        "info": "This example shows how a player state can be set.\n\nThe player ID must be set to a valid player ID.",
+        "x": 180,
+        "y": 80,
+        "wires": []
     }
 ]

@@ -1,0 +1,106 @@
+[
+    {
+        "id": "895c8ef067027dde",
+        "type": "tab",
+        "label": "HEOS - Set Player Volume",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "02aee6cbed100e8f",
+        "type": "inject",
+        "z": "895c8ef067027dde",
+        "name": "Level 10",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "{\"playerVolumeLevel\":10}",
+        "payloadType": "json",
+        "x": 300,
+        "y": 160,
+        "wires": [
+            [
+                "8ecd9452ac7d7bce"
+            ]
+        ]
+    },
+    {
+        "id": "db52196ef29a4e12",
+        "type": "debug",
+        "z": "895c8ef067027dde",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 790,
+        "y": 180,
+        "wires": []
+    },
+    {
+        "id": "fa08147280c2dbdf",
+        "type": "inject",
+        "z": "895c8ef067027dde",
+        "name": "Level 20",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "{\"playerVolumeLevel\":20}",
+        "payloadType": "json",
+        "x": 300,
+        "y": 220,
+        "wires": [
+            [
+                "8ecd9452ac7d7bce"
+            ]
+        ]
+    },
+    {
+        "id": "8ecd9452ac7d7bce",
+        "type": "heos-player-volume",
+        "z": "895c8ef067027dde",
+        "name": "",
+        "device": "",
+        "deviceAutodiscover": "autodiscover",
+        "playerId": "",
+        "playerVolumeLevel": 0,
+        "playerIdFromPayload": false,
+        "playerVolumeLevelFromPayload": true,
+        "x": 540,
+        "y": 180,
+        "wires": [
+            [
+                "db52196ef29a4e12"
+            ]
+        ]
+    },
+    {
+        "id": "e38372a0ac3ec963",
+        "type": "comment",
+        "z": "895c8ef067027dde",
+        "name": "Readme",
+        "info": "This example shows how a player volume level can be set.\n\nThe player ID must be set to a valid player ID.",
+        "x": 280,
+        "y": 80,
+        "wires": []
+    }
+]

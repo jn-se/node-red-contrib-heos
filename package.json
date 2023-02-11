@@ -1,6 +1,6 @@
 {
   "name": "@jn-se/node-red-contrib-heos",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Node-RED node for Denon HEOS devices and Denon Home.",
   "homepage": "https://github.com/jn-se/node-red-contrib-heos",
   "keywords": ["node-red", "heos", "denon", "denon home"],
@@ -16,10 +16,13 @@
   "node-red": {
     "version": ">=2.0.0",
     "nodes": {
-      "heos": "heos.js"
+      "heos-device": "heos/heos-device.js",
+      "heos-listener": "heos/heos-listener.js",
+      "heos-command": "heos/heos-command.js",
+      "heos-player-state": "heos/heos-player-state.js",
+      "heos-player-volume": "heos/heos-player-volume.js"
     }
   },
-  "main": "heos.js",
   "engines": {
     "node": ">=14"
   },

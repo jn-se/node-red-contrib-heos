@@ -1,0 +1,146 @@
+<script src="resources/@jn-se/node-red-contrib-heos/heos-admin-ui.js"></script>
+<link rel="stylesheet" href="resources/@jn-se/node-red-contrib-heos/heos-admin-ui.css">
+
+<script type="text/javascript">
+
+    RED.nodes.registerType('heos-command',{
+        category: 'HEOS',
+        color: '#E2D96E',
+        defaults: {
+            name: {value: "", required: false},
+            device: {value:"", required: false, type:"heos-device"},
+            deviceAutodiscover: {value: "autodiscover", required: true},
+            commandGroup: {value: "", required: false},
+            command: {value: "", required: false},
+            attributes: {value: "", required: false},
+            commandGroupFromPayload: {value: true, required: false},
+            commandFromPayload: {value: true, required: false},
+            attributesFromPayload: {value: true, required: false},
+        },
+        inputs:1,
+        outputs:1,
+        icon: "font-awesome/fa-music",
+        label: function() {
+            return this.name||"HEOS Command";
+        },
+        paletteLabel: "Command",
+        inputLabels: "command configuration",
+        outputLabels: "executed command",
+        oneditprepare: function() {
+            
+            $("#node-input-deviceAutodiscover").typedInput({
+                types: [
+                    {
+                        value: "deviceAutodiscover",
+                        options: [
+                            { value: "autodiscover", label: "Autodiscover and connect to HEOS"},
+                            { value: "specific", label: "Connect to specific device"},
+                        ]
+                    }
+                ]
+            })
+
+            $("#node-input-deviceAutodiscover").change(function() {
+
+                var currentValue = $("#node-input-deviceAutodiscover").val();
+
+                switch (currentValue) {
+
+                    case "autodiscover":
+                            $("#heos-device-select").hide();
+                            break;
+                    default:
+                            $("#heos-device-select").show();
+                }
+            })
+
+            $("#node-input-attributes").typedInput({
+                type:"json",
+                types:["json"]
+            })
+        }
+    });
+
+</script>
+
+<script type="text/html" data-template-name="heos-command">
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+    <hr />
+    <div class="form-row">
+        <label for="node-input-device-deviceAutodiscover"><i class="fa fa-object-wifi"></i> Connection</label>
+        <input type="text" id="node-input-deviceAutodiscover">
+    </div>
+    <div class="form-row" id="heos-device-select">
+        <label for="node-input-device"><i class="fa fa-server"></i> Device</label>
+        <input type="text" id="node-input-device">
+    </div>
+    <hr />
+    <div class="form-row">
+        <label for="node-input-commandGroup"><i class="fa fa-object-group"></i> Command Group</label>
+        <input type="text" id="node-input-commandGroup">
+    </div>
+    <div class="form-row checkbox">
+        <input type="checkbox" id="node-input-commandGroupFromPayload">
+        <label for="node-input-commandGroupFromPayload"> Allow override from msg.payload.commandGroup</label>
+    </div>
+    <hr />
+    <div class="form-row">
+        <label for="node-input-command"><i class="fa fa-terminal"></i> Command</label>
+        <input type="text" id="node-input-command">
+    </div>
+    <div class="form-row checkbox">
+        <input type="checkbox" id="node-input-commandFromPayload">
+        <label for="node-input-commandFromPayload">Allow override from msg.payload.command</label>
+    </div>
+    <hr />
+    <div class="form-row">
+        <label for="node-input-attributes"><i class="fa fa-cog"></i> Attributes</label>
+        <input type="textarea" id="node-input-attributes">
+    </div>
+    <div class="form-row checkbox">
+        <input type="checkbox" id="node-input-attributesFromPayload">
+        <label for="node-input-attributesFromPayload"> Allow override from msg.payload.attributes</label>
+    </div>
+</script>
+
+<script type="text/html" data-help-name="heos-command">
+    <p>A HEOS node to send commands to the HEOS system.</p>
+    <h3>Inputs</h3>
+    <dl class="message-properties">
+        <dt>payload.commandGroup
+            <span class="property-type">string</span>
+        </dt>
+        <dd> The <em>commandGroup</em> provided via the payload overrides the command group defined in the node configuration.</dd>
+        <dt>payload.command
+            <span class="property-type">string</span>
+        </dt>
+        <dd> The <em>command</em> provided via the payload overrides the command defined in the node configuration. </dd>
+        <dt>payload.attributes
+            <span class="property-type">JSON</span>
+        </dt>
+        <dd> The <em>attributes</em> provided via the payload overrides the attributes defined in the node configuration. </dd>
+    </dl>
+    <h3>Outputs</h3>
+    <ol class="node-ports">
+        <li>Standard output
+            <dl class="message-properties">
+                <dt>payload <span class="property-type">JSON</span></dt>
+                <dd>The <em>payload</em> output of the HEOS response. Only available if there is a <em>payload</em> object in the HEOS reponse for the specific command. <em>Payload</em> is only available for some commands that requests more detailed data. A simple response is always provided via the <em>heos</em> attribute.</dd>
+            </dl>
+            <dl class="message-properties">
+                <dt>heos <span class="property-type">JSON</span></dt>
+                <dd>The <em>heos</em> data object of the HEOS response.</dd>
+            </dl>
+        </li>
+    </ol>
+    <h3>Details</h3>
+    <p>The <em>commandGroup</em> and the <em>command</em> define the category of the HEOS command.</p>
+    <p>The <em>attributes</em> are a JSON object with the configuration data that is required for the specific command. The <em>attributes</em> are optional.</p>
+    <h3>References</h3>
+    <ul>
+        <li><a target="_blank" href="https://rn.dmglobal.com/euheos/HEOS_CLI_ProtocolSpecification_2021.pdf">HEOS CLI Protocol Specification (2021)</a> - full documentation of HEOS commands.</li>
+    </ul>
+</script>
