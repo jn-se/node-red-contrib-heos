@@ -201,6 +201,57 @@
         }
     });
 
+    RED.nodes.registerType('heos-player-volume',{
+        category: 'HEOS',
+        color: '#E7E7AE',
+        defaults: {
+            name: {value: "", required: false},
+            device: {value:"", required: false, type:"heos-device"},
+            deviceAutodiscover: {value: "autodiscover", required: true},
+            playerId: {value: "", required: false},
+            playerVolumeLevel: {value: 0, required: true, validate:RED.validators.number()},
+            playerIdFromPayload: {value: true, required: false},
+            playerVolumeLevelFromPayload: {value: true, required: false}
+        },
+        inputs:1,
+        outputs:1,
+        icon: "font-awesome/fa-volume-up",
+        label: function() {
+            return this.name||"HEOS Player Volume";
+        },
+        paletteLabel: "Player Volume",
+        inputLabels: "player and volume configuration",
+        outputLabels: "executed configuration",
+        oneditprepare: function() {
+
+            $("#node-input-deviceAutodiscover").typedInput({
+                types: [
+                    {
+                        value: "deviceAutodiscover",
+                        options: [
+                            { value: "autodiscover", label: "Autodiscover and connect to HEOS"},
+                            { value: "specific", label: "Connect to specific device"},
+                        ]
+                    }
+                ]
+            })
+
+            $("#node-input-deviceAutodiscover").change(function() {
+
+                var currentValue = $("#node-input-deviceAutodiscover").val();
+
+                switch (currentValue) {
+
+                    case "autodiscover":
+                            $("#heos-device-select").hide();
+                            break;
+                    default:
+                            $("#heos-device-select").show();
+                }
+            })
+        }
+    });
+
 </script>
 
 <script type="text/html" data-template-name="heos-device">
@@ -437,6 +488,71 @@
     </ol>
     <h3>Details</h3>
     <p>The <em>playerId</em> defines the HEOS player which state should be configured.
+    </p>
+    <h3>References</h3>
+    <ul>
+        <li><a target="_blank" href="https://rn.dmglobal.com/euheos/HEOS_CLI_ProtocolSpecification_2021.pdf">HEOS CLI Protocol Specification (2021)</a> - full documentation of HEOS commands.</li>
+    </ul>
+</script>
+
+<script type="text/html" data-template-name="heos-player-volume">
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+    <hr />
+    <div class="form-row">
+        <label for="node-input-device-deviceAutodiscover"><i class="fa fa-object-wifi"></i> Connection</label>
+        <input type="text" id="node-input-deviceAutodiscover">
+    </div>
+    <div class="form-row" id="heos-device-select">
+        <label for="node-input-device"><i class="fa fa-server"></i> Device</label>
+        <input type="text" id="node-input-device">
+    </div>
+    <hr />
+    <div class="form-row">
+        <label for="node-input-playerId"><i class="fa fa-music"></i> Player ID</label>
+        <input type="text" id="node-input-playerId">
+    </div>
+    <div class="form-row checkbox">
+        <input type="checkbox" id="node-input-playerIdFromPayload">
+        <label for="node-input-playerIdFromPayload"> Allow override from msg.payload.playerId.</label>
+    </div>
+    <hr />
+    <div class="form-row">
+        <label for="node-input-playerVolumeLevel"><i class="fa fa-play"></i> Volume Level</label>
+        <input type="text" id="node-input-playerVolumeLevel">
+    </div>
+    <div class="form-row checkbox">
+        <input type="checkbox" id="node-input-playerVolumeLevelFromPayload">
+        <label for="node-input-playerVolumeLevelFromPayload"> Allow override from msg.payload.playerVolumeLevel.</label>
+    </div>
+</script>
+
+<script type="text/html" data-help-name="heos-player-volume">
+    <p>A HEOS node to control a player volume.</p>
+    <h3>Inputs</h3>
+    <dl class="message-properties">
+        <dt>payload.playerId
+            <span class="property-type">string</span>
+        </dt>
+        <dd> The playerId provided via the payload overrides the playerId defined in the node configuration. </dd>
+        <dt>payload.playerVolumeLevel
+            <span class="property-type">integer</span>
+        </dt>
+        <dd> The playerVolumeLevel provided via the payload overrides the playerVolumeLevel defined in the node configuration. The value must be an integer between 0 and 100.</dd>
+    </dl>
+    <h3>Outputs</h3>
+    <ol class="node-ports">
+        <li>Standard output
+            <dl class="message-properties">
+                <dt>heos <span class="property-type">JSON</span></dt>
+                <dd>The <code>heos</code> data object of the HEOS response.</dd>
+            </dl>
+        </li>
+    </ol>
+    <h3>Details</h3>
+    <p>The <em>playerId</em> defines the HEOS player which volume should be configured.
     </p>
     <h3>References</h3>
     <ul>

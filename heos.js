@@ -581,6 +581,144 @@ module.exports = function(RED) {
 
     RED.nodes.registerType("heos-player-state", HeosPlayerStateNode);
 
+    /**
+     * The HeosPlayerVolumeNode can submit player volume commands to the HEOS network.
+     */
+    function HeosPlayerVolumeNode(config) {
+
+        RED.nodes.createNode(this, config);
+        var node = this;
+
+        onInitNode(node)
+
+        node.device = RED.nodes.getNode(config.device);
+        node.deviceAutodiscover = config.deviceAutodiscover;
+
+        node.heosPlayerId = config.playerId;
+        node.heosPlayerVolume = config.playerVolume;
+
+        var heosConnection;
+
+        node.on('input', function(msg, send, done) {
+
+            onHeosConnecting(node)
+
+            var playerId = node.heosPlayerId;
+            var playerVolumeLevel = node.heosPlayerVolumeLevel;
+
+            if(config.playerIdFromPayload && msg.payload.playerId) {
+                playerId = msg.payload.playerId;
+            }
+
+            if(config.playerVolumeLevelFromPayload && msg.payload.playerVolumeLevel) {
+                playerVolumeLevel = msg.payload.playerVolumeLevel;
+            }
+
+            const attributes = {
+                "pid": playerId,
+                "level": playerVolumeLevel
+            }
+
+            if(node.deviceAutodiscover == "autodiscover") {
+
+                // Autodiscovering is used - connect via discoverAndConnect
+                heos.discoverAndConnect().then(connection => {
+                    
+                    onHeosConnected(node)
+
+                    heosConnection = connection
+
+                    connection
+                        .on({ commandGroup: "player", command: "set_volume"}, (message) => {
+
+                            // For maximum backwards compatibility, check that send exists.
+                            // If this node is installed in Node-RED 0.x, it will need to
+                            // fallback to using `node.send`
+                            send = send || function() { node.send.apply(node,arguments) }
+
+                            send(message);
+
+                            doCloseHeosConnection(node, heosConnection)
+
+                            if (done) {
+                                done();
+                            }
+                        })
+                        .onClose(error => {
+                            
+                            onCloseHeosConnection(node, error)
+                        })
+                        .onError(error => {
+                            
+                            onErrorHeosConnection(node, error)
+                        })
+                        .write("player", "set_volume", attributes)
+                })
+                .catch(reason => {
+
+                    onHeosDiscoveryAndConnectCatch(node) 
+                })
+            }
+            else {
+
+                // Autodiscovering is disabled - connect to specific device
+                if(node.device.ip) {
+
+                    let ipAddress = node.device.ip;
+
+                    heos.connect(ipAddress).then(connection => {
+                        
+                        onHeosConnected(node, ipAddress)
+
+                        heosConnection = connection
+
+                        connection
+                            .on({ commandGroup: "player", command: "set_volume"}, (message) => {
+
+                                // For maximum backwards compatibility, check that send exists.
+                                // If this node is installed in Node-RED 0.x, it will need to
+                                // fallback to using `node.send`
+                                send = send || function() { node.send.apply(node,arguments) }
+
+                                send(message);
+
+                                doCloseHeosConnection(node, heosConnection)
+
+                                if (done) {
+                                    done();
+                                }
+                            })
+                            .onClose(error => {
+                                
+                                onCloseHeosConnection(node, error)
+                            })
+                            .onError(error => {
+                                
+                                onErrorHeosConnection(node, error)
+                            })
+                            .write("player", "set_volume", attributes)
+                    })
+                    .catch(reason => {
+
+                        onHeosDiscoveryAndConnectCatch(node, ipAddress) 
+                    })
+                }
+                else {
+
+                    onNodeNoIpDefined(node)
+                }
+            }
+
+        });
+
+        this.on('close', function(done) {
+
+            onCloseNode(node, heosConnection, done)
+        });
+    }
+
+    RED.nodes.registerType("heos-player-volume", HeosPlayerVolumeNode);
+
     // Data lookup for UI
     heosAdminAPI.heosAdminAPI(RED)
 }
