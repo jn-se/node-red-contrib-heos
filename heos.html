@@ -139,19 +139,19 @@
 
     RED.nodes.registerType('heos-player-state',{
         category: 'HEOS',
-        color: '#a6bbcf',
+        color: '#E7E7AE',
         defaults: {
             name: {value: "", required: false},
             device: {value:"", required: false, type:"heos-device"},
             deviceAutodiscover: {value: "autodiscover", required: true},
             playerId: {value: "", required: false},
-            playerState: {value: "", required: false},
+            playerState: {value: "play", required: true},
             playerIdFromPayload: {value: true, required: false},
             playerStateFromPayload: {value: true, required: false}
         },
         inputs:1,
         outputs:1,
-        icon: "font-awesome/fa-music",
+        icon: "font-awesome/fa-play",
         label: function() {
             return this.name||"HEOS Player State";
         },
