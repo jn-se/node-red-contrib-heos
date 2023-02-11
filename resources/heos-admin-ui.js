@@ -26,7 +26,7 @@ class heosAdminUI {
             })
                 .done(function (response) {
 
-                    if (response && JSON.parse(response)) {
+                    if (response) {
 
                         callback(null, response);
                     } else {
@@ -67,11 +67,11 @@ class heosAdminUI {
 
         // The players endpoints is used for retrieving device information because devices do not have names but players do.
         // So the user can view a list of devices/players with names.
-        ui.getData("heos/data/players", function (err, players) {
+        ui.getData("heos/data/players", function (err, playersJson) {
 
-            if (players && JSON.parse(players)) {
+            if (playersJson) {
                 
-                let playersList = JSON.parse(players);
+                let playersList = playersJson.players;
 
                 $('#heos-devices-discovering').hide();
 
