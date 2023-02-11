@@ -81,7 +81,7 @@
     </div>
     <hr />
     <div class="form-row">
-        <label for="node-input-playerVolumeLevel"><i class="fa fa-play"></i> Volume Level</label>
+        <label for="node-input-playerVolumeLevel"><i class="fa fa-volume-up"></i> Volume Level</label>
         <input type="text" id="node-input-playerVolumeLevel">
     </div>
     <div class="form-row checkbox">
@@ -97,18 +97,18 @@
         <dt>payload.playerId
             <span class="property-type">string</span>
         </dt>
-        <dd> The playerId provided via the payload overrides the playerId defined in the node configuration. </dd>
+        <dd> The <em>playerId</em> provided via the payload overrides the player ID defined in the node configuration.</dd>
         <dt>payload.playerVolumeLevel
             <span class="property-type">integer</span>
         </dt>
-        <dd> The playerVolumeLevel provided via the payload overrides the playerVolumeLevel defined in the node configuration. The value must be an integer between 0 and 100.</dd>
+        <dd> The <em>playerVolumeLevel</em> provided via the payload overrides the volume level defined in the node configuration. The value must be an integer between 0 and 100.</dd>
     </dl>
     <h3>Outputs</h3>
     <ol class="node-ports">
         <li>Standard output
             <dl class="message-properties">
                 <dt>heos <span class="property-type">JSON</span></dt>
-                <dd>The <code>heos</code> data object of the HEOS response.</dd>
+                <dd>The <em>heos</em> data object of the HEOS response.</dd>
             </dl>
         </li>
     </ol>

@@ -86,7 +86,7 @@
 </script>
 
 <script type="text/html" data-help-name="heos-listener">
-    <p>A HEOS node to listen for change events in the HEOS system.</p>
+    <p>A HEOS node to listen for change events in the HEOS network.</p>
     <h3>Inputs</h3>
     <dl class="message-properties">
         No input available because the node is triggered by the HEOS event.
@@ -96,16 +96,17 @@
         <li>Standard output
             <dl class="message-properties">
                 <dt>payload <span class="property-type">JSON</span></dt>
-                <dd>The <code>payload</code> output of the HEOS response. Only available if there is a <code>payload</code> object in the HEOS reponse for the specific command. <code>Payload</code> is only available for some commands that requests more detailed data. A simple response is always provided via the <code>heos</code> attribute.</dd>
+                <dd>The <em>payload</em> output of the HEOS response. Only available if there is a <em>payload</em> object in the HEOS reponse for the specific command. <em>Payload</em> is only available for some commands that requests more detailed data. A simple response is always provided via the <em>heos</em> attribute.</dd>
             </dl>
             <dl class="message-properties">
                 <dt>heos <span class="property-type">JSON</span></dt>
-                <dd>The <code>heos</code> data object of the HEOS response.</dd>
+                <dd>The <em>heos</em> data object of the HEOS response.</dd>
             </dl>
         </li>
     </ol>
     <h3>Details</h3>
     <p>The node will listen for events of the <em>commandGroup</em> and the <em>command</em>.</p>
+    <p>If an event is catched it is send to the output of the node.</p>
     <h3>References</h3>
     <ul>
         <li><a target="_blank" href="https://rn.dmglobal.com/euheos/HEOS_CLI_ProtocolSpecification_2021.pdf">HEOS CLI Protocol Specification (2021)</a> - full documentation of HEOS commands.</li>
