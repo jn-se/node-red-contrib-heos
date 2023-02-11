@@ -16,10 +16,13 @@
   "node-red": {
     "version": ">=2.0.0",
     "nodes": {
-      "heos": "heos.js"
+      "heos-device": "heos/heos-device.js",
+      "heos-listener": "heos/heos-listener.js",
+      "heos-command": "heos/heos-command.js",
+      "heos-player-state": "heos/heos-player-state.js",
+      "heos-player-volume": "heos/heos-player-volume.js"
     }
   },
-  "main": "heos.js",
   "engines": {
     "node": ">=14"
   },

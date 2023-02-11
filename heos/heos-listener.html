@@ -1,0 +1,113 @@
+<script src="resources/@jn-se/node-red-contrib-heos/heos-admin-ui.js"></script>
+<link rel="stylesheet" href="resources/@jn-se/node-red-contrib-heos/heos-admin-ui.css">
+
+<script type="text/javascript">
+
+    RED.nodes.registerType('heos-listener',{
+        category: 'HEOS',
+        color: '#3FADB5',
+        defaults: {
+            name: {value: "", required: false},
+            device: {value:"", required: false, type:"heos-device"},
+            deviceAutodiscover: {value: "autodiscover", required: true},
+            commandGroup: {value: "", required: false},
+            command: {value: "", required: false},
+        },
+        inputs:0,
+        outputs:1,
+        icon: "font-awesome/fa-music",
+        label: function() {
+            return this.name||"HEOS Listener";
+        },
+        paletteLabel: "Listener",
+        inputLabels: null,
+        outputLabels: "received event",
+        oneditprepare: function() {
+            
+            $("#node-input-deviceAutodiscover").typedInput({
+                types: [
+                    {
+                        value: "deviceAutodiscover",
+                        options: [
+                            { value: "autodiscover", label: "Autodiscover and connect to HEOS"},
+                            { value: "specific", label: "Connect to specific device"},
+                        ]
+                    }
+                ]
+            })
+
+            $("#node-input-deviceAutodiscover").change(function() {
+
+                var currentValue = $("#node-input-deviceAutodiscover").val();
+
+                switch (currentValue) {
+
+                    case "autodiscover":
+                            $("#heos-device-select").hide();
+                            break;
+                    default:
+                            $("#heos-device-select").show();
+                }
+            })
+
+            $("#node-input-attributes").typedInput({
+                type:"json",
+                types:["json"]
+            })
+        }
+    });
+
+</script>
+
+<script type="text/html" data-template-name="heos-listener">
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+    <hr />
+    <div class="form-row">
+        <label for="node-input-device-deviceAutodiscover"><i class="fa fa-object-wifi"></i> Connection</label>
+        <input type="text" id="node-input-deviceAutodiscover">
+    </div>
+    <div class="form-row" id="heos-device-select">
+        <label for="node-input-device"><i class="fa fa-server"></i> Device</label>
+        <input type="text" id="node-input-device">
+    </div>
+    <hr />
+    <div class="form-row">
+        <label for="node-input-commandGroup"><i class="fa fa-object-group"></i> Command Group</label>
+        <input type="text" id="node-input-commandGroup">
+    </div>
+    <hr />
+    <div class="form-row">
+        <label for="node-input-command"><i class="fa fa-terminal"></i> Command</label>
+        <input type="text" id="node-input-command">
+    </div>
+</script>
+
+<script type="text/html" data-help-name="heos-listener">
+    <p>A HEOS node to listen for change events in the HEOS system.</p>
+    <h3>Inputs</h3>
+    <dl class="message-properties">
+        No input available because the node is triggered by the HEOS event.
+    </dl>
+    <h3>Outputs</h3>
+    <ol class="node-ports">
+        <li>Standard output
+            <dl class="message-properties">
+                <dt>payload <span class="property-type">JSON</span></dt>
+                <dd>The <code>payload</code> output of the HEOS response. Only available if there is a <code>payload</code> object in the HEOS reponse for the specific command. <code>Payload</code> is only available for some commands that requests more detailed data. A simple response is always provided via the <code>heos</code> attribute.</dd>
+            </dl>
+            <dl class="message-properties">
+                <dt>heos <span class="property-type">JSON</span></dt>
+                <dd>The <code>heos</code> data object of the HEOS response.</dd>
+            </dl>
+        </li>
+    </ol>
+    <h3>Details</h3>
+    <p>The node will listen for events of the <em>commandGroup</em> and the <em>command</em>.</p>
+    <h3>References</h3>
+    <ul>
+        <li><a target="_blank" href="https://rn.dmglobal.com/euheos/HEOS_CLI_ProtocolSpecification_2021.pdf">HEOS CLI Protocol Specification (2021)</a> - full documentation of HEOS commands.</li>
+    </ul>
+</script>
