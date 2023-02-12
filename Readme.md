@@ -88,7 +88,7 @@ HEOS change events include the following configurations:
 
 So this node is completely generic and can get any change event available in the HEOS network. For a complete reference of available events please see the HEOS CLI reference linked at the [bottom of this page](#external-documentation).
 
-The data of the change event can be read from the output in the `payload.heos` attribute.
+The data of the change event can be read from the output in the `msg.heos` attribute.
 
 For example to register player state events (like `play`, `pause` and `stop`) or player volume events use the following node configurations.
 
