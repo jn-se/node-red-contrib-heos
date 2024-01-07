@@ -7,12 +7,44 @@
             name: {value: "", required: false},
             device: {value:"", required: false, type:"heos-device"},
             deviceAutodiscover: {value: "autodiscover", required: true},
+            mode: {value: null, required: true},
+            // Custom
             commandGroup: {value: "", required: false},
             command: {value: "", required: false},
             attributes: {value: "", required: false},
             commandGroupFromPayload: {value: true, required: false},
             commandFromPayload: {value: true, required: false},
             attributesFromPayload: {value: true, required: false},
+            // Player
+            playerCommand: {value: null, required: false},
+            playerPid: {value: null, required: false},
+            playerPidFromPayload: {value: false, required: false},
+            playerState: {value: null, required: false},
+            playerStateFromPayload: {value: false, required: false},
+            playerLevel: {value: 0, required: false, validate:RED.validators.number()},
+            playerLevelFromPayload: {value: false, required: false},
+            playerStep: {value: 0, required: false, validate:RED.validators.number()},
+            playerStepFromPayload: {value: false, required: false},
+            playerMuteState: {value: null, required: false},
+            playerMuteStateFromPayload: {value: false, required: false},
+            playerPlayModeRepeat: {value: null, required: false},
+            playerPlayModeRepeatFromPayload: {value: false, required: false},
+            playerPlayModeShuffle: {value: null, required: false},
+            playerPlayModeShuffleFromPayload: {value: false, required: false},
+            playerGetQueue: {value: null, required: false},
+            playerGetQueueFromPayload: {value: false, required: false},
+            playerPlayQueue: {value: null, required: false},
+            playerPlayQueueFromPayload: {value: false, required: false},
+            playerRemoveFromQueue: {value: null, required: false},
+            playerRemoveFromQueueFromPayload: {value: false, required: false},
+            playerSaveQueueName: {value: null, required: false},
+            playerSaveQueueNameFromPayload: {value: false, required: false},
+            playerMoveQueueSquid: {value: null, required: false},
+            playerMoveQueueSquidFromPayload: {value: false, required: false},
+            playerMoveQueueDquid: {value: null, required: false},
+            playerMoveQueueDquidFromPayload: {value: false, required: false},
+            // Group
+            groupCommand: {value: null, required: false},
         },
         inputs:1,
         outputs:1,
@@ -25,6 +57,7 @@
         outputLabels: "executed command",
         oneditprepare: function() {
             
+            // Dropdown for autodiscover mode
             $("#node-input-deviceAutodiscover").typedInput({
                 types: [
                     {
@@ -37,6 +70,7 @@
                 ]
             })
 
+            // Change Event for autodiscover mode dropdown
             $("#node-input-deviceAutodiscover").change(function() {
 
                 var currentValue = $("#node-input-deviceAutodiscover").val();
@@ -51,9 +85,387 @@
                 }
             })
 
+            // Format attributes field as JSON field
             $("#node-input-attributes").typedInput({
                 type:"json",
                 types:["json"]
+            })
+
+            // Dropdown for input mode
+            $("#node-input-mode").typedInput({
+                types: [
+                    {
+                        value: "mode",
+                        options: [
+                            { value: "custom", label: "Custom Command"},
+                            { value: "system", label: "System Command Wizard"},
+                            { value: "player", label: "Player Command Wizard"},
+                            { value: "group", label: "Group Command Wizard"},
+                        ]
+                    }
+                ]
+            })
+
+            // Hide Wizard form items
+            $("#heos-mode-player").hide();
+            $("#heos-mode-group").hide();
+
+            $("#heos-mode-player-pid").hide();
+            $("#heos-mode-player-state").hide();
+            $("#heos-mode-player-level").hide();
+            $("#heos-mode-player-step").hide();
+            $("#heos-mode-player-mutestate").hide();
+            $("#heos-mode-player-playmode").hide();
+            $("#heos-mode-player-getqueue").hide();
+            $("#heos-mode-player-playqueue").hide();
+            $("#heos-mode-player-removefromqueue").hide();
+            $("#heos-mode-player-savequeue").hide();
+            $("#heos-mode-player-movequeue").hide();
+
+            // Change Event for input mode dropdown
+            $("#node-input-mode").change(function() {
+
+                var currentValue = $("#node-input-mode").val();
+
+                switch (currentValue) {
+
+                    case "custom":
+                            $("#heos-mode-custom").show();
+                            $("#heos-mode-system").hide();
+                            $("#heos-mode-player").hide();
+                            $("#heos-mode-group").hide();
+                            break;
+                    case "system":
+                            $("#heos-mode-custom").hide();
+                            $("#heos-mode-system").show();
+                            $("#heos-mode-player").hide();
+                            $("#heos-mode-group").hide();
+                            break;
+                    case "player":
+                            $("#heos-mode-custom").hide();
+                            $("#heos-mode-system").hide();
+                            $("#heos-mode-player").show();
+                            $("#heos-mode-group").hide();
+                            break;
+                    case "group":
+                            $("#heos-mode-custom").hide();
+                            $("#heos-mode-system").hide();
+                            $("#heos-mode-player").hide();
+                            $("#heos-mode-group").show();
+                            break;
+                    default:
+                            $("#heos-mode-custom").show();
+                            $("#heos-mode-system").hide();
+                            $("#heos-mode-player").hide();
+                            $("#heos-mode-group").hide();
+                }
+            })
+
+            // Dropdown for system command
+            $("#node-input-systemCommand").typedInput({
+                types: [
+                    {
+                        value: "systemcommand",
+                        options: [
+                            { value: "reboot", label: "HEOS Speaker Reboot"},
+                        ]
+                    }
+                ]
+            })
+
+            // Dropdown for player command
+            $("#node-input-playerCommand").typedInput({
+                types: [
+                    {
+                        value: "playercommand",
+                        options: [
+                            { value: "get_players", label: "Get Players"},
+                            { value: "get_player_info", label: "Get Player Info"},
+                            { value: "get_play_state", label: "Get Play State"},
+                            { value: "set_play_state", label: "Set Play State"},
+                            { value: "get_now_playing_media", label: "Get Now Playing Media"},
+                            { value: "get_volume", label: "Get Volume"},
+                            { value: "set_volume", label: "Set Volume"},
+                            { value: "volume_up", label: "Volume Up"},
+                            { value: "volume_down", label: "Volume Down"},
+                            { value: "get_mute", label: "Get Mute"},
+                            { value: "set_mute", label: "Set Mute"},
+                            { value: "toggle_mute", label: "Toggle Mute"},
+                            { value: "get_play_mode", label: "Get Play Mode"},
+                            { value: "set_play_mode", label: "Set Play Mode"},
+                            { value: "get_queue", label: "Get Queue"},
+                            { value: "play_queue", label: "Play Queue Item"},
+                            { value: "remove_from_queue", label: "Remove Item(s) from Queue"},
+                            { value: "save_queue", label: "Save Queue as Playlist"},
+                            { value: "clear_queue", label: "Clear Queue"},
+                            { value: "move_queue", label: "Move Queue"},
+                            { value: "play_next", label: "Play Next"},
+                            { value: "play_previous", label: "Play Previous"},
+                            { value: "check_update", label: "Check for Firmware Update"},
+                        ]
+                    }
+                ]
+            })
+
+            // Change Event for player command dropdown
+            $("#node-input-playerCommand").change(function() {
+
+                var currentValue = $("#node-input-playerCommand").val();
+
+                switch (currentValue) {
+
+                    case "get_players":
+                            $("#heos-mode-player-pid").hide();
+                            $("#heos-mode-player-state").hide();
+                            $("#heos-mode-player-level").hide();
+                            $("#heos-mode-player-step").hide();
+                            $("#heos-mode-player-mutestate").hide();
+                            $("#heos-mode-player-playmode").hide();
+                            $("#heos-mode-player-getqueue").hide();
+                            $("#heos-mode-player-playqueue").hide();
+                            $("#heos-mode-player-removefromqueue").hide();
+                            $("#heos-mode-player-savequeue").hide();
+                            $("#heos-mode-player-movequeue").hide();
+                            break;
+                    case "set_play_state":
+                            $("#heos-mode-player-pid").show();
+                            $("#heos-mode-player-state").show();
+                            $("#heos-mode-player-level").hide();
+                            $("#heos-mode-player-step").hide();
+                            $("#heos-mode-player-mutestate").hide();
+                            $("#heos-mode-player-playmode").hide();
+                            $("#heos-mode-player-getqueue").hide();
+                            $("#heos-mode-player-playqueue").hide();
+                            $("#heos-mode-player-removefromqueue").hide();
+                            $("#heos-mode-player-savequeue").hide();
+                            $("#heos-mode-player-movequeue").hide();
+                            break;
+                    case "set_volume":
+                            $("#heos-mode-player-pid").show();
+                            $("#heos-mode-player-state").hide();
+                            $("#heos-mode-player-level").show();
+                            $("#heos-mode-player-step").hide();
+                            $("#heos-mode-player-mutestate").hide();
+                            $("#heos-mode-player-playmode").hide();
+                            $("#heos-mode-player-getqueue").hide();
+                            $("#heos-mode-player-playqueue").hide();
+                            $("#heos-mode-player-removefromqueue").hide();
+                            $("#heos-mode-player-savequeue").hide();
+                            $("#heos-mode-player-movequeue").hide();
+                            break;
+                    case "volume_up":
+                            $("#heos-mode-player-pid").show();
+                            $("#heos-mode-player-state").hide();
+                            $("#heos-mode-player-level").hide();
+                            $("#heos-mode-player-step").show();
+                            $("#heos-mode-player-mutestate").hide();
+                            $("#heos-mode-player-playmode").hide();
+                            $("#heos-mode-player-getqueue").hide();
+                            $("#heos-mode-player-playqueue").hide();
+                            $("#heos-mode-player-removefromqueue").hide();
+                            $("#heos-mode-player-savequeue").hide();
+                            $("#heos-mode-player-movequeue").hide();
+                            break;
+                    case "volume_down":
+                            $("#heos-mode-player-pid").show();
+                            $("#heos-mode-player-state").hide();
+                            $("#heos-mode-player-level").hide();
+                            $("#heos-mode-player-step").show();
+                            $("#heos-mode-player-mutestate").hide();
+                            $("#heos-mode-player-playmode").hide();
+                            $("#heos-mode-player-getqueue").hide();
+                            $("#heos-mode-player-playqueue").hide();
+                            $("#heos-mode-player-removefromqueue").hide();
+                            $("#heos-mode-player-savequeue").hide();
+                            $("#heos-mode-player-movequeue").hide();
+                            break;
+                    case "set_mute":
+                            $("#heos-mode-player-pid").show();
+                            $("#heos-mode-player-state").hide();
+                            $("#heos-mode-player-level").hide();
+                            $("#heos-mode-player-step").hide();
+                            $("#heos-mode-player-mutestate").show();
+                            $("#heos-mode-player-playmode").hide();
+                            $("#heos-mode-player-getqueue").hide();
+                            $("#heos-mode-player-playqueue").hide();
+                            $("#heos-mode-player-removefromqueue").hide();
+                            $("#heos-mode-player-savequeue").hide();
+                            $("#heos-mode-player-movequeue").hide();
+                            break;
+                    case "set_play_mode":
+                            $("#heos-mode-player-pid").show();
+                            $("#heos-mode-player-state").hide();
+                            $("#heos-mode-player-level").hide();
+                            $("#heos-mode-player-step").hide();
+                            $("#heos-mode-player-mutestate").hide();
+                            $("#heos-mode-player-playmode").show();
+                            $("#heos-mode-player-getqueue").hide();
+                            $("#heos-mode-player-playqueue").hide();
+                            $("#heos-mode-player-removefromqueue").hide();
+                            $("#heos-mode-player-savequeue").hide();
+                            $("#heos-mode-player-movequeue").hide();
+                            break;
+                    case "get_queue":
+                            $("#heos-mode-player-pid").show();
+                            $("#heos-mode-player-state").hide();
+                            $("#heos-mode-player-level").hide();
+                            $("#heos-mode-player-step").hide();
+                            $("#heos-mode-player-mutestate").hide();
+                            $("#heos-mode-player-playmode").hide();
+                            $("#heos-mode-player-getqueue").show();
+                            $("#heos-mode-player-playqueue").hide();
+                            $("#heos-mode-player-removefromqueue").hide();
+                            $("#heos-mode-player-savequeue").hide();
+                            $("#heos-mode-player-movequeue").hide();
+                            break;
+                    case "play_queue":
+                            $("#heos-mode-player-pid").show();
+                            $("#heos-mode-player-state").hide();
+                            $("#heos-mode-player-level").hide();
+                            $("#heos-mode-player-step").hide();
+                            $("#heos-mode-player-mutestate").hide();
+                            $("#heos-mode-player-playmode").hide();
+                            $("#heos-mode-player-getqueue").hide();
+                            $("#heos-mode-player-playqueue").show();
+                            $("#heos-mode-player-removefromqueue").hide();
+                            $("#heos-mode-player-savequeue").hide();
+                            $("#heos-mode-player-movequeue").hide();
+                            break;
+                    case "remove_from_queue":
+                            $("#heos-mode-player-pid").show();
+                            $("#heos-mode-player-state").hide();
+                            $("#heos-mode-player-level").hide();
+                            $("#heos-mode-player-step").hide();
+                            $("#heos-mode-player-mutestate").hide();
+                            $("#heos-mode-player-playmode").hide();
+                            $("#heos-mode-player-getqueue").hide();
+                            $("#heos-mode-player-playqueue").hide();
+                            $("#heos-mode-player-removefromqueue").show();
+                            $("#heos-mode-player-savequeue").hide();
+                            $("#heos-mode-player-movequeue").hide();
+                            break;
+                    case "save_queue":
+                            $("#heos-mode-player-pid").show();
+                            $("#heos-mode-player-state").hide();
+                            $("#heos-mode-player-level").hide();
+                            $("#heos-mode-player-step").hide();
+                            $("#heos-mode-player-mutestate").hide();
+                            $("#heos-mode-player-playmode").hide();
+                            $("#heos-mode-player-getqueue").hide();
+                            $("#heos-mode-player-playqueue").hide();
+                            $("#heos-mode-player-removefromqueue").hide();
+                            $("#heos-mode-player-savequeue").show();
+                            $("#heos-mode-player-movequeue").hide();
+                            break;
+                    case "move_queue":
+                            $("#heos-mode-player-pid").show();
+                            $("#heos-mode-player-state").hide();
+                            $("#heos-mode-player-level").hide();
+                            $("#heos-mode-player-step").hide();
+                            $("#heos-mode-player-mutestate").hide();
+                            $("#heos-mode-player-playmode").hide();
+                            $("#heos-mode-player-getqueue").hide();
+                            $("#heos-mode-player-playqueue").hide();
+                            $("#heos-mode-player-removefromqueue").hide();
+                            $("#heos-mode-player-savequeue").hide();
+                            $("#heos-mode-player-movequeue").show();
+                            break;
+                    default:
+                            // get_player_info
+                            // get_play_state
+                            // get_now_playing_media
+                            // get_volume
+                            // get_mute
+                            // toggle_mute
+                            // get_play_mode
+                            $("#heos-mode-player-pid").show();
+                            $("#heos-mode-player-state").hide();
+                            $("#heos-mode-player-level").hide();
+                            $("#heos-mode-player-step").hide();
+                            $("#heos-mode-player-mutestate").hide();
+                            $("#heos-mode-player-playmode").hide();
+                            $("#heos-mode-player-getqueue").hide();
+                            $("#heos-mode-player-playqueue").hide();
+                            $("#heos-mode-player-removefromqueue").hide();
+                            $("#heos-mode-player-savequeue").hide();
+                            $("#heos-mode-player-movequeue").hide();
+                            break;
+                }
+            })
+
+            // Dropdown for player command play state
+            $("#node-input-playerState").typedInput({
+                types: [
+                    {
+                        value: "playerstate",
+                        options: [
+                            { value: "play", label: "Play"},
+                            { value: "pause", label: "Pause"},
+                            { value: "stop", label: "Stop"},
+                        ]
+                    }
+                ]
+            })
+
+            // Dropdown for player command mute state
+            $("#node-input-playerMuteState").typedInput({
+                types: [
+                    {
+                        value: "playermutestate",
+                        options: [
+                            { value: "on", label: "On"},
+                            { value: "off", label: "Off"},
+                        ]
+                    }
+                ]
+            })
+
+            // Dropdown for player command play mode repeat
+            $("#node-input-playerPlayModeRepeat").typedInput({
+                types: [
+                    {
+                        value: "playerplaymoderepeat",
+                        options: [
+                            { value: "on_all", label: "All"},
+                            { value: "on_one", label: "One"},
+                            { value: "off", label: "Off"},
+                        ]
+                    }
+                ]
+            })
+
+            // Dropdown for player command play mode shuffle
+            $("#node-input-playerPlayModeShuffle").typedInput({
+                types: [
+                    {
+                        value: "playerplaymodeshuffle",
+                        options: [
+                            { value: "on", label: "On"},
+                            { value: "off", label: "Off"},
+                        ]
+                    }
+                ]
+            })
+
+            // Dropdown for group command
+            $("#node-input-groupCommand").typedInput({
+                types: [
+                    {
+                        value: "groupcommand",
+                        options: [
+                            { value: "get_groups", label: "Get Groups"},
+                            { value: "get_group_info", label: "Get Group Info"},
+                            { value: "set_group", label: "Set Group"},
+                            { value: "get_volume", label: "Get Group Volume"},
+                            { value: "set_volume", label: "Set Group Volume"},
+                            { value: "volume_up", label: "Group Volume Up"},
+                            { value: "volume_down", label: "Group Volume Down"},
+                            { value: "get_mute", label: "Get Group Mute"},
+                            { value: "set_mute", label: "Set Group Mute"},
+                            { value: "toggle_mute", label: "Toggle Group Mute"},
+                        ]
+                    }
+                ]
             })
         }
     });
@@ -67,7 +479,7 @@
     </div>
     <hr />
     <div class="form-row">
-        <label for="node-input-device-deviceAutodiscover"><i class="fa fa-object-wifi"></i> Connection</label>
+        <label for="node-input-deviceAutodiscover"><i class="fa fa-object-wifi"></i> Connection</label>
         <input type="text" id="node-input-deviceAutodiscover">
     </div>
     <div class="form-row" id="heos-device-select">
@@ -76,30 +488,176 @@
     </div>
     <hr />
     <div class="form-row">
-        <label for="node-input-commandGroup"><i class="fa fa-object-group"></i> Command Group</label>
-        <input type="text" id="node-input-commandGroup">
-    </div>
-    <div class="form-row checkbox">
-        <input type="checkbox" id="node-input-commandGroupFromPayload">
-        <label for="node-input-commandGroupFromPayload"> Allow override from msg.payload.commandGroup</label>
+        <label for="node-input-mode"><i class="fa"></i> Command Mode</label>
+        <input type="text" id="node-input-mode">
     </div>
     <hr />
-    <div class="form-row">
-        <label for="node-input-command"><i class="fa fa-terminal"></i> Command</label>
-        <input type="text" id="node-input-command">
+    <div id="heos-mode-custom">
+        <div class="form-row">
+            <label for="node-input-commandGroup"><i class="fa fa-object-group"></i> Command Group</label>
+            <input type="text" id="node-input-commandGroup">
+        </div>
+        <div class="form-row checkbox">
+            <input type="checkbox" id="node-input-commandGroupFromPayload">
+            <label for="node-input-commandGroupFromPayload"> Allow override from msg.payload.commandGroup</label>
+        </div>
+        <hr />
+        <div class="form-row">
+            <label for="node-input-command"><i class="fa fa-terminal"></i> Command</label>
+            <input type="text" id="node-input-command">
+        </div>
+        <div class="form-row checkbox">
+            <input type="checkbox" id="node-input-commandFromPayload">
+            <label for="node-input-commandFromPayload">Allow override from msg.payload.command</label>
+        </div>
+        <hr />
+        <div class="form-row">
+            <label for="node-input-attributes"><i class="fa fa-cog"></i> Attributes</label>
+            <input type="textarea" id="node-input-attributes">
+        </div>
+        <div class="form-row checkbox">
+            <input type="checkbox" id="node-input-attributesFromPayload">
+            <label for="node-input-attributesFromPayload"> Allow override from msg.payload.attributes</label>
+        </div>
     </div>
-    <div class="form-row checkbox">
-        <input type="checkbox" id="node-input-commandFromPayload">
-        <label for="node-input-commandFromPayload">Allow override from msg.payload.command</label>
+    <div id="heos-mode-player">
+        <div class="form-row">
+            <label for="node-input-playerCommand"><i class="fa"></i> Player Command</label>
+            <input type="text" id="node-input-playerCommand">
+        </div>
+        <div id="heos-mode-player-pid">
+            <hr />
+            <div class="form-row">
+                <label for="node-input-playerPid"><i class="fa"></i> Player ID</label>
+                <input type="text" id="node-input-playerPid">
+            </div>
+            <div class="form-row checkbox">
+                <input type="checkbox" id="node-input-playerPidFromPayload">
+                <label for="node-input-playerPidFromPayload">Allow override from msg.payload.player.pid</label>
+            </div>
+        </div>
+        <div id="heos-mode-player-state">
+            <div class="form-row">
+                <label for="node-input-playerState"><i class="fa"></i> Player State</label>
+                <input type="text" id="node-input-playerState">
+            </div>
+            <div class="form-row checkbox">
+                <input type="checkbox" id="node-input-playerStateFromPayload">
+                <label for="node-input-playerStateFromPayload">Allow override from msg.payload.player.state</label>
+            </div>
+        </div>
+        <div id="heos-mode-player-level">
+            <div class="form-row">
+                <label for="node-input-playerLevel"><i class="fa"></i> Volume Level</label>
+                <input type="text" id="node-input-playerLevel">
+            </div>
+            <div class="form-row checkbox">
+                <input type="checkbox" id="node-input-playerLevelFromPayload">
+                <label for="node-input-playerLevelFromPayload">Allow override from msg.payload.player.level</label>
+            </div>
+        </div>
+        <div id="heos-mode-player-step">
+            <div class="form-row">
+                <label for="node-input-playerStep"><i class="fa"></i> Volume Step</label>
+                <input type="text" id="node-input-playerStep">
+            </div>
+            <div class="form-row checkbox">
+                <input type="checkbox" id="node-input-playerStepFromPayload">
+                <label for="node-input-playerStepFromPayload">Allow override from msg.payload.player.step</label>
+            </div>
+        </div>
+        <div id="heos-mode-player-mutestate">
+            <div class="form-row">
+                <label for="node-input-playerMuteState"><i class="fa"></i> Mute State</label>
+                <input type="text" id="node-input-playerMuteState">
+            </div>
+            <div class="form-row checkbox">
+                <input type="checkbox" id="node-input-playerMuteStateFromPayload">
+                <label for="node-input-playerMuteStateFromPayload">Allow override from msg.payload.player.mutestate</label>
+            </div>
+        </div>
+        <div id="heos-mode-player-playmode">
+            <div class="form-row">
+                <label for="node-input-playerPlayModeRepeat"><i class="fa"></i> Play Mode Repeat</label>
+                <input type="text" id="node-input-playerPlayModeRepeat">
+            </div>
+            <div class="form-row checkbox">
+                <input type="checkbox" id="node-input-playerPlayModeRepeatFromPayload">
+                <label for="node-input-playerPlayModeRepeatFromPayload">Allow override from msg.payload.player.playmoderepeat</label>
+            </div>
+            <div class="form-row">
+                <label for="node-input-playerPlayModeShuffle"><i class="fa"></i> Play Mode Shuffle</label>
+                <input type="text" id="node-input-playerPlayModeShuffle">
+            </div>
+            <div class="form-row checkbox">
+                <input type="checkbox" id="node-input-playerPlayModeShuffleFromPayload">
+                <label for="node-input-playerPlayModeShuffleFromPayload">Allow override from msg.payload.player.playmodeshuffle</label>
+            </div>
+        </div>
+        <div id="heos-mode-player-getqueue">
+            <div class="form-row">
+                <label for="node-input-playerGetQueue"><i class="fa"></i> Get Queue Item</label>
+                <input type="text" id="node-input-playerGetQueue">
+            </div>
+            <div class="form-row checkbox">
+                <input type="checkbox" id="node-input-playerGetQueueFromPayload">
+                <label for="node-input-playerGetQueueFromPayload">Allow override from msg.payload.player.getqueue</label>
+            </div>
+        </div>
+        <div id="heos-mode-player-playqueue">
+            <div class="form-row">
+                <label for="node-input-playerPlayQueue"><i class="fa"></i> Play Queue Item</label>
+                <input type="text" id="node-input-playerPlayQueue">
+            </div>
+            <div class="form-row checkbox">
+                <input type="checkbox" id="node-input-playerPlayQueueFromPayload">
+                <label for="node-input-playerPlayQueueFromPayload">Allow override from msg.payload.player.playqueue</label>
+            </div>
+        </div>
+        <div id="heos-mode-player-removefromqueue">
+            <div class="form-row">
+                <label for="node-input-playerRemoveFromQueue"><i class="fa"></i> Remove Items from Queue</label>
+                <input type="text" id="node-input-playerRemoveFromQueue">
+            </div>
+            <div class="form-row checkbox">
+                <input type="checkbox" id="node-input-playerRemoveFromQueueFromPayload">
+                <label for="node-input-playerRemoveFromQueueFromPayload">Allow override from msg.payload.player.removefromqueue</label>
+            </div>
+        </div>
+        <div id="heos-mode-player-savequeue">
+            <div class="form-row">
+                <label for="node-input-playerSaveQueueName"><i class="fa"></i> Save Queue</label>
+                <input type="text" id="node-input-playerSaveQueueName">
+            </div>
+            <div class="form-row checkbox">
+                <input type="checkbox" id="node-input-playerSaveQueueNameFromPayload">
+                <label for="node-input-playerSaveQueueNameFromPayload">Allow override from msg.payload.player.savequeuename</label>
+            </div>
+        </div>
+        <div id="heos-mode-player-movequeue">
+            <div class="form-row">
+                <label for="node-input-playerMoveQueueSquid"><i class="fa"></i> Move Queue Items</label>
+                <input type="text" id="node-input-playerMoveQueueSquid">
+            </div>
+            <div class="form-row checkbox">
+                <input type="checkbox" id="node-input-playerMoveQueueSquidFromPayload">
+                <label for="node-input-playerMoveQueueSquidFromPayload">Allow override from msg.payload.player.movequeuesquid</label>
+            </div>
+            <div class="form-row">
+                <label for="node-input-playerMoveQueueDquid"><i class="fa"></i> Destination</label>
+                <input type="text" id="node-input-playerMoveQueueDquid">
+            </div>
+            <div class="form-row checkbox">
+                <input type="checkbox" id="node-input-playerMoveQueueDquidFromPayload">
+                <label for="node-input-playerMoveQueueDquidFromPayload">Allow override from msg.payload.player.movequeuedquid</label>
+            </div>
+        </div>
     </div>
-    <hr />
-    <div class="form-row">
-        <label for="node-input-attributes"><i class="fa fa-cog"></i> Attributes</label>
-        <input type="textarea" id="node-input-attributes">
-    </div>
-    <div class="form-row checkbox">
-        <input type="checkbox" id="node-input-attributesFromPayload">
-        <label for="node-input-attributesFromPayload"> Allow override from msg.payload.attributes</label>
+    <div id="heos-mode-group">
+        <div class="form-row">
+            <label for="node-input-groupCommand"><i class="fa fa-terminal"></i> Group Command</label>
+            <input type="text" id="node-input-groupCommand">
+        </div>
     </div>
 </script>
 
